@@ -5,48 +5,57 @@ const uuid = require('uuid');
 const path = require('path');
 const { koaBody } = require('koa-body');
 const fs = require('fs');
-const { error } = require('console');
+const koaStatic = require('koa-static')
 
 let ticket = [];
 let ticketFull = [];
+let string = [];
 
 const public = path.join(__dirname, '/public');
 const routeTicket = public + '\\' + 'ticket.txt';
 const routeTicketFull = public + '\\' + 'ticketFull.txt';
+
+app.use(koaStatic(public));
 
 app.use(koaBody({
     urlencoded: true,
     multipart: true
 }))
 
+// app.use((ctx, next) => {
+//     if(ctx.request.method !== 'OPTIONS') { // это значит что запрос не GET или POST
+//         next();
+
+//         return;
+//     }
+
+//     ctx.set('Access-Control-Allow-Origin', '*');
+//     ctx.set('Access-Control-Allow-Methods', 'DELETE, PUT, PATCH, GET, POST')
+
+//     ctx.response.status = 204; // это корректное поведение для такого рода запросов
+
+//     next();
+// })
+
 app.use((ctx, next) => {
-    if(ctx.request.method !== 'OPTIONS') { // это значит что запрос не GET или POST
-        next();
 
-        return;
-    }
+    if(ctx.request.method === 'GET' && ctx.request.url === '/?method=allTickets') {
+        ctx.set('Access-Control-Allow-Origin', '*');
+        ctx.set('Access-Control-Allow-Methods', 'DELETE, PUT, PATCH, GET, POST');
+        ctx.set('Access-Control-Allow-Headers', 'X-Requested-With')
 
-    ctx.set('Access-Control-Allow-Origin', '*');
-    ctx.set('Access-Control-Allow-Methods', 'DELETE, PUT, PATCH, GET, POST')
-
-    ctx.response.status = 204; // это корректное поведение для такого рода запросов
-
-    next();
-})
-
-app.use((ctx, next) => {
-    ctx.set('Access-Control-Allow-Origin', '*');
-
-    console.log(ctx.request.query.method)
-    if(ctx.request.query.method === 'allTickets') {
         fs.readFile(routeTicket, 'utf8', (err, data) => {
             if(err) throw err;
-            console.log(data)
-            ctx.response.body = 'data';
+
+            JSON.parse(data).forEach( item => {
+                string.push(item);
+            })
+            console.log('///////////data------------', string)
         })
+        ctx.response.body = string
+        console.log('*************' ,string)
     }
-    ctx.response.body = 'data';
-    console.log('kjbvjhbvhbvbjvhbjhvbdfhbvjhdfbvjdvjfb')
+    console.log('*************' ,string)
     next();
 })
 
@@ -56,7 +65,6 @@ app.use((ctx, next) => {
 
         let body = ctx.request.body;
         body.id = uuid.v4();
-
         
         fs.readFile(routeTicket, 'utf8', (err, data) => {
             if(err) throw err;
