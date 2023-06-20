@@ -9,7 +9,7 @@ const koaStatic = require('koa-static')
 
 let ticket = [];
 let ticketFull = [];
-let string = [];
+let string = null;
 
 const public = path.join(__dirname, '/public');
 const routeTicket = public + '\\' + 'ticket.txt';
@@ -47,15 +47,15 @@ app.use((ctx, next) => {
         fs.readFile(routeTicket, 'utf8', (err, data) => {
             if(err) throw err;
 
-            JSON.parse(data).forEach( item => {
-                string.push(item);
-            })
-            console.log('///////////data------------', string)
+            if(data) {
+                string = null;
+                string = data;
+            }
         })
-        ctx.response.body = string
-        console.log('*************' ,string)
+        ctx.response.body = string;
+
     }
-    console.log('*************' ,string)
+
     next();
 })
 
