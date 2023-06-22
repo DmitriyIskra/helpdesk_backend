@@ -8,10 +8,8 @@ const fs = require('fs');
 const koaStatic = require('koa-static');
 const cors = require('@koa/cors');
 
-let ticket = [{name:"Описание 1",status:"false",created:"20.06.23 16:12",id:"d3434b08-d829-4172-a1c4-475a1cc23efe"},
-            {name:"Описание 2",status:"false",created:"20.06.23 16:12",id:"aa2392a8-2222-42aa-8795-8c8f52598243"}];
-let ticketFull = [{name:"Описание 1",description:"Any description",status:"false",created:"20.06.23 16:12",id:"d3434b08-d829-4172-a1c4-475a1cc23efe"},
-                    {name:"Описание 2",description:"Any description",status:"false",created:"20.06.23 16:12",id:"aa2392a8-2222-42aa-8795-8c8f52598243"}];
+let ticket = [];
+let ticketFull = [];
 
 
 const public = path.join(__dirname, '/public');
@@ -32,15 +30,18 @@ app.use(async ctx => {
     ctx.set('Access-Control-Allow-Methods', 'DELETE, PUT, PATCH, GET, POST');
     
     const { method } = ctx.request.query;
-    // console.log('method', method)
+
+    let body;
+    let index;
+    let id;
+
     switch (method) {
         case 'allTickets':
             ctx.response.body = ticket;
             ctx.response.status = 200;
-            console.log(method)
             return;
         case 'createTicket':
-            let body = ctx.request.body;
+            body = ctx.request.body;
             body.id = uuid.v4();
 
             let shortBody = {...body};
@@ -51,11 +52,46 @@ app.use(async ctx => {
 
             ctx.response.status = 200;
             ctx.response.body = 'ticket created';
-            console.log(method)
+            return;
+        case 'changeStatus':
+            id = ctx.request.body.id;
+
+            index = ticket.findIndex( item => item.id === id );
+            ticket[index].status = ticket[index].status === 'false'? 'true': 'false';
+
+            index = ticketFull.findIndex( item => item.id === id );
+            ticketFull[index].status = ticketFull[index].status === 'false'? 'true': 'false';
+
+            ctx.response.status = 200;
+            ctx.response.body = 'status changed';
+            return;
+        case 'ticketById': 
+            id = ctx.request.query.id;
+
+            index = ticketFull.findIndex( item => item.id === id );
+            ctx.response.body = ticketFull[index];
+
+            ctx.response.status = 200;
+            return;
+        case 'ticketEdit':
+
+            return;
+        case 'DELETE':
+            id = ctx.request.query.id;
+         
+            index = ticket.findIndex( item => item.id === id);
+            ticket.splice(index, 1);
+            
+
+            let indexFull = ticketFull.findIndex( item => item.id === id);
+            ticketFull.splice(indexFull, 1);
+  
+            ctx.response.status = 200;
+            ctx.response.body = `ticket ${id} deleted`;
             return;
         default:
             ctx.response.status = 404;
-            return;
+            return;  
     }
 });
 
