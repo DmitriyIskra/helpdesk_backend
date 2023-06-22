@@ -74,7 +74,22 @@ app.use(async ctx => {
             ctx.response.status = 200;
             return;
         case 'ticketEdit':
+            body = ctx.request.body; 
 
+            index = ticket.findIndex( item => item.id === body.id);
+            ticket[index].name = body.name;
+            ticket[index].description = body.description;
+            ticket[index].status = body.status;
+            ticket[index].created = body.created;
+
+            index = ticketFull.findIndex( item => item.id === body.id);
+            ticketFull[index].name = body.name;
+            ticketFull[index].description = body.description; 
+            ticketFull[index].status = body.status; 
+            ticketFull[index].created = body.created;
+
+            ctx.response.body = 'ticket changed'; 
+            ctx.response.status = 200;
             return;
         case 'DELETE':
             id = ctx.request.query.id;
